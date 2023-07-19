@@ -184,13 +184,11 @@ export default defineComponent({
           this.fetchDetail(this.currentKey);
         }
         --this.counter;
-        console.log(this.counter);
       }, this.limitInterval);
     },
     stopCounter() {
       clearInterval(this.interval);
       this.counter = 16;
-      console.log("stop interval", this.counter);
     },
     async restoreInstance() {
       try {
@@ -206,7 +204,13 @@ export default defineComponent({
             headers: headersList,
           }
         );
-        const { data } = await response.json();
+        const { data, message, error } = await response.json();
+        if (error) {
+          Notify.create({
+            message,
+            color: "red",
+          });
+        }
         if (data.length > 0) {
           setTimeout(() => {
             this.fetchInstance();
@@ -237,7 +241,13 @@ export default defineComponent({
           headers: headersList,
         });
 
-        const { data } = await response.json();
+        const { data, error, message } = await response.json();
+        if (error) {
+          Notify.create({
+            message,
+            color: "red",
+          });
+        }
         this.instances = data;
         this.setDevices(data);
       } catch (error) {
@@ -262,11 +272,18 @@ export default defineComponent({
           }
         );
 
-        await response.json();
-        this.fetchInstance();
-        Notify.create({
-          message: "Berhasil menambahkan device, silahkan scan qrcode",
-        });
+        const { error, data, message } = await response.json();
+        if (error) {
+          Notify.create({
+            message,
+            color: "red",
+          });
+        } else {
+          this.fetchInstance();
+          Notify.create({
+            message: "Berhasil menambahkan device, silahkan scan qrcode",
+          });
+        }
       } catch (error) {
         Notify.create({
           message: "Gagal menambahkan device, silahkan scan qrcode",
